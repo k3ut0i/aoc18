@@ -1,0 +1,30 @@
+* Notes
+** Day 03
+If iterating over an array of more than one dimension, *row-major-index* and *row-major-aref* may help by iterating over just one variable.
+
+#+BEGIN_SRC lisp
+  (defparameter a (make-array (list 10 10)))
+
+  (dotimes (x 10)
+    (dotimes (y 10)
+      (setf (aref a x y) (random 10))))
+
+  (loop :for i :below (array-total-size a)
+       :maximizing (row-major-aref a i))
+#+END_SRC
+
+#+RESULTS:
+: 9
+
+** Day 04
+get-max and other related functions could be just inlined, if I used reduce.
+If iterating for a single value, just use reduce or find or something similar. Do go all the way to loop for simple iterations.
+
+** Day 05
+I should've used char-equal to compare characters ignoring case. That would've improved flow of in both trigger-poly and remove-if(part2).
+#+BEGIN_SRC lisp
+  (char-equal #\A #\a)
+#+END_SRC
+
+#+RESULTS:
+: T
