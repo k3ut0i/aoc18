@@ -57,12 +57,11 @@
 				  (sort (set-difference all done :test #'equal)
 					#'string-lessp)))))))
 
-(defparameter *cost-offset* 60)
-(defun get-costs (steps)
+(defun get-costs (steps offset)
   (loop
      :with costs = (make-hash-table :test #'equal)
      :for s :in (sort steps #'string-lessp)
-     :for i :from (+ *cost-offset* 1) :to (+ *cost-offset* 26)
+     :for i :from (+ offset 1) :to (+ offset 26)
      :do (setf (gethash s costs) i)
      :finally (return costs)))
 
@@ -72,7 +71,8 @@
    (nworkers :reader nworkers :initarg :nworkers)
    (done :accessor done :initform nil)
    (to-do :accessor to-do)
-   (costs :accessor costs)))
+   (costs :accessor costs)
+   (cost-offset :reader cost-offset :initarg :cost-offset)))
 
 (defmethod initialize-instance :after ((state sstate) &rest initargs)
   (declare (ignore initargs))
@@ -80,7 +80,8 @@
 				    :initial-element nil))
   (setf (to-do state) (sort (all-steps (dep-graph state))
 			    #'string-lessp))
-  (setf (costs state) (get-costs (all-steps (dep-graph state)))))
+  (setf (costs state) (get-costs (all-steps (dep-graph state))
+				 (cost-offset state))))
 
 (defmethod print-object ((state sstate) stream)
   (format stream "Done: ~A~%" (done state))
@@ -127,18 +128,18 @@
 	     (distribute sch)))
 	  (t (decf (cdr (aref (workers sch) i)))))))
 
-;; Where am i missing one second?
-;; I guessed in aoc site +1 or -1 to my answer.
-(defun part2-nice (file nworkers)
+;; If the work is completed in nth second, the time taken is (n+1) seconds.
+(defun part2-nice (file nworkers offset)
   (let ((schedule-obj (make-instance 'sstate
 				     :nworkers nworkers
-				     :deps (pretty-deps (get-deps file)))))
+				     :deps (pretty-deps (get-deps file))
+				     :cost-offset offset)))
     (loop
        :with nsteps = 0
        :while (to-do schedule-obj)
        :do (progn
 	     (step-through schedule-obj)
 	     (incf nsteps)
-;;	     (format t "~A~%" (on-bench schedule-obj))
+	     ;;(format t "~A~%" (on-bench schedule-obj))
 	     )
        :finally (return nsteps))))
