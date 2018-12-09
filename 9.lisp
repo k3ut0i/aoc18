@@ -1,7 +1,7 @@
 (eval-when (:compile-toplevel)
   (ql:quickload :cl-ppcre)
   (use-package (list :cl-ppcre)))
-
+(declaim (optimize (speed 3) (safety 0) (debug 0)))
 (defstruct circle
   (marbles (list 0 1) :type list)
   (idx 1 :type fixnum)
@@ -11,8 +11,9 @@
   (push elt (cdr (nthcdr idx lst)))
   lst)
 
-(defun push-marble-after (marble n c)
 
+(defun push-marble-after (marble n c)
+  (declare (type fixnum marble n))
   (insert-after (circle-marbles c)
 	     (mod (+ n (circle-idx c))
 		  (circle-len c))
@@ -23,6 +24,7 @@
   c)
 
 (defun remove-nth (n lst)
+  (declare (type fixnum n))
   (if (= n 0)
       (values (car lst) (cdr lst))
       (values (nth n lst) (remove-if (constantly t) lst :start n :end (1+ n)))))
@@ -33,9 +35,9 @@
 		       (circle-len c))
 		  (circle-marbles c))
     (setf (circle-marbles c) rest-marbles)
-    (decf (circle-len c))
     (setf (circle-idx c) (mod (+ n (circle-idx c))
 			      (circle-len c)))
+    (decf (circle-len c))
     marble))
 
 (defun read-input (file)
@@ -54,20 +56,19 @@
 (defstruct game
   (board (make-circle))
   (score)
-  (next-marble 2)
-  (next-player 1)
-  (num-players))
+  (next-marble 2 :type fixnum)
+  (next-player 1 :type fixnum)
+  (num-players 0 :type fixnum))
 
 (defun new-game (nplayers)
-  (make-game :score (make-array (list nplayers) :initial-element nil)
+  (make-game :score (make-array (list nplayers) :initial-element 0 :element-type 'fixnum)
 	     :num-players nplayers))
 
 (defun step-game (g)
   (if (zerop (mod (game-next-marble g) 23))
-      (push 
-       (cons (pop-marble-at -7 (game-board g))
-	     (game-next-marble g))
-	    (aref (game-score g) (game-next-player g)))
+      (incf  (aref (game-score g) (game-next-player g)) 
+	     (+ (pop-marble-at -7 (game-board g))
+		(game-next-marble g)))
       (push-marble-after (game-next-marble g) 1 (game-board g)))
   (incf (game-next-marble g))
   (setf (game-next-player g)
@@ -83,6 +84,4 @@
      :do (step-game game)
      :finally (return (loop
 			 :for i :below nplayers
-			 :maximizing (reduce #'+ (aref (game-score game) i)
-					     :key (lambda (p) (+ (car p)
-								 (cdr p))))))))
+			 :maximizing (aref (game-score game) i)))))
