@@ -1,7 +1,7 @@
 (eval-when (:compile-toplevel)
   (ql:quickload :cl-ppcre)
   (use-package (list :cl-ppcre)))
-(declaim (optimize (speed 3) (safety 0) (debug 0)))
+
 (defstruct circle
   (marbles (list 0 1) :type list)
   (idx 1 :type fixnum)
@@ -80,8 +80,11 @@
 (defun high-score-after-nth-marble (nplayers last-marble)
   (loop
      :with game = (new-game nplayers)
+     :with i = 0
+     :do (incf i)
      :while (<= (game-next-marble game) last-marble)
-     :do (step-game game)
+     :do (progn (step-game game)
+		(when (zerop (mod i 100000)) (princ ".")))
      :finally (return (loop
 			 :for i :below nplayers
 			 :maximizing (aref (game-score game) i)))))

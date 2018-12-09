@@ -28,3 +28,29 @@ I should've used char-equal to compare characters ignoring case. That would've i
 
 #+RESULTS:
 : T
+
+** Day 09
+For part 1 the using a list as a circle buffer sufficed. But most expensive operations in this problem seem to be insert and delete in the circle buffer. Arrays provide constant insert and delete so I'm shifting my circle data structure for part2 to arrays.
+*** Part 2
+First attempt stats
+#+BEGIN_EXAMPLE
+Evaluation took:
+  5.658 seconds of real time
+  5.662797 seconds of total run time (5.442621 user, 0.220176 system)
+  [ Run times consist of 0.703 seconds GC time, and 4.960 seconds non-GC time. ]
+  100.09% CPU
+  9,596,470,454 processor cycles
+  1,066,784,032 bytes consed
+#+END_EXAMPLE
+
+Worse with a lot of rplacd and setf cdrs
+#+BEGIN_EXAMPLE
+Evaluation took:
+  24.966 seconds of real time
+  24.965778 seconds of total run time (24.965647 user, 0.000131 system)
+  100.00% CPU
+  42,344,029,675 processor cycles
+  3,276,800 bytes consed
+#+END_EXAMPLE
+I think last function was the problem. Must learn profiling.
+So there is a reason when people say don't optimize blindly without looking for bottle necks.
