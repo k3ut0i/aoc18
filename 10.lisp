@@ -39,7 +39,7 @@
      :for num :in snum
      :while (= num (+ first (* i delta)))
      :do (incf i)
-     :finally (> i n)))
+     :finally (return (> i (1+ n)))))
 
 (defun message-p (points)
   (and (loop
@@ -59,6 +59,11 @@
 		p
 	      (list (+ x vx) (+ y vy) vx vy)))
 	  points))
+(defun after-n-sec (n points)
+  (loop
+     :with p = points
+     :repeat n :do (setf p (after-sec p))
+     :finally (return p)))
 
 (defun plot (points)
   (destructuring-bind (xmin xmax ymin ymax)
@@ -73,9 +78,36 @@
 		   1))
       a)))
 
-(defun part1 (file)
+(defun area (points)
+  (destructuring-bind (minx maxx miny maxy)
+      (point-boundaries points)
+    (* (1+ (- maxy miny)) (1+ (- maxx minx)))))
+
+(defun plot-image (points output-file)
+  (with-open-file (s output-file
+		     :direction :output
+		     :if-exists :supersede)
+    (format s "P1~%")
+    (let ((matrix (plot points)))
+      (destructuring-bind (x y)
+	  (array-dimensions matrix)
+	(format s "~A ~A~%" y x)
+	(dotimes (i x)
+	  (dotimes (j y)
+	    (format s "~A " (aref matrix i j)))
+	  (format s "~%"))))))
+
+(defun solution (input-file)
   (loop
-     :with n = 0
-     :for points = (get-points file) :then (after-sec points)
-     :do (incf n)
-     :thereis (message-p points)))
+     :with initial-points = (get-points input-file)
+     :with min-area = (area initial-points)
+     :with min-sec = 0
+     :with min-points = initial-points
+     :for n  :from 0 :below 50000
+     :for points = initial-points :then (after-sec points)
+     :when (< (area points) min-area)
+     :do (setq min-area (area points)
+	       min-sec n
+	       min-points points)
+     :finally (plot-image min-points (format nil "day10-in-secs-~A.pbm" min-sec))))
+
