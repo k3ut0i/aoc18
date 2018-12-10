@@ -30,8 +30,8 @@ I should've used char-equal to compare characters ignoring case. That would've i
 : T
 
 ** Day 09
-For part 1 the using a list as a circle buffer sufficed. But most expensive operations in this problem seem to be insert and delete in the circle buffer. Arrays provide constant insert and delete so I'm shifting my circle data structure for part2 to arrays.
-*** Part 2
+For part 1 the using a list as a circle buffer sufficed. But most expensive operations in this problem seem to be insert and delete in the circle buffer. 
+*** Part 1
 First attempt stats
 #+BEGIN_EXAMPLE
 Evaluation took:
@@ -43,7 +43,7 @@ Evaluation took:
   1,066,784,032 bytes consed
 #+END_EXAMPLE
 
-Worse with a lot of rplacd and setf cdrs
+Worse with a lot of rplacd and setf cdrs. This implementation still exists as a reference to using destructive list operations. I haven't used them before. 
 #+BEGIN_EXAMPLE
 Evaluation took:
   24.966 seconds of real time
@@ -54,3 +54,8 @@ Evaluation took:
 #+END_EXAMPLE
 I think last function was the problem. Must learn profiling.
 So there is a reason when people say don't optimize blindly without looking for bottle necks.
+*** Part 2.
+I have tried implementing this in *c* using circular doubly linked lists. It's a bit buggy, but runtime is awesome. Keep in mind the above lisp runtimes are for _71522_ Not _7152200_ given below.
+#+BEGIN_EXAMPLE
+./day09_02 446 7152200  0.53s user 0.15s system 99% cpu 0.682 total
+#+END_EXAMPLE

@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+/* Next and Previous are named w.r.t clockwise direction  */
 struct marble{
   int i;
   struct marble * next;
@@ -21,6 +22,7 @@ struct game{
   int current_marble;
 };
 void print_game(struct game*);
+void print_scores(struct game*);
 void step_game(struct game*);
 void free_game(struct game*);
 
@@ -39,13 +41,11 @@ int main(int argc, char** argv){
   g->current_marble = 1;
   g->current_player = 0;
 
-  print_game(g);
-
   while(g->current_marble <= max)
     step_game(g);
-
-  print_game(g);
-
+  print_scores(g);
+  /*  print_game(g); */
+  /*  free_game(g);*/ /* TODO: Free functions needs debugging */
   /*  fprintf(stdout, "%d %d\n", n, max); */
 }
 
@@ -74,6 +74,12 @@ void print_game(struct game* g)
   fputc('\n', stdout);
 }
 
+void print_scores(struct game* g){
+  for(int i = 0; i < g->num_players; i++){
+    fprintf(stdout, "%d ", g->score[i]);
+  }
+  fputc('\n', stdout);  
+}
 void step_game(struct game* g)
 {
   struct marble* new = new_marble(g->current_marble);
@@ -108,6 +114,7 @@ void free_game(struct game* g)
   while(m != NULL){
     next = m->next;
     free(m);
+    next->previous = NULL;
     m = next;
   }
   free(g->b);
