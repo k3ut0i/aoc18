@@ -2,7 +2,7 @@
 
 ** Day 10
 After 10117 seconds we have this image.
-[[file:day10-in-secs-10117.pbm]]
+[[file:day10.png]]
 
 
 

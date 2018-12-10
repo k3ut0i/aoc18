@@ -41,17 +41,6 @@
      :do (incf i)
      :finally (return (> i (1+ n)))))
 
-(defun message-p (points)
-  (and (loop
-	  :with h = (make-hash-table)
-	  :for p :in points
-	  :do (setf (gethash (car p) h)
-		    (cons (cadr p) (gethash (car p) h nil)))
-	  :finally (progn
-		     (return (loop
-				:for v :being :each :hash-value :in h
-				:thereis (n-consecutive-p 5 v)))))
-       points))
 
 (defun after-sec (points)
   (mapcar (lambda (p)
@@ -110,4 +99,3 @@
 	       min-sec n
 	       min-points points)
      :finally (plot-image min-points (format nil "day10-in-secs-~A.pbm" min-sec))))
-
