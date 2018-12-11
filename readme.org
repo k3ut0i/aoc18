@@ -2,6 +2,8 @@
 
 ** Day 10
 After 10117 seconds we have this image.
+
+
 [[file:day10.png]]
 
 

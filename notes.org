@@ -59,3 +59,9 @@ I have tried implementing this in *c* using circular doubly linked lists. It's a
 #+BEGIN_EXAMPLE
 ./day09_02 446 7152200  0.53s user 0.15s system 99% cpu 0.682 total
 #+END_EXAMPLE
+[2018-12-11 Tue] My c solution for 71522 steps(and all the other examples) works perfectly. But for 7152200, answer just returned 0. After printing all the scores I've noticed that they were negative. This was my first case of integer overflow and wrap around. Using *long long* instead of int to store my scores solved the problem.
+
+#+BEGIN_EXAMPLE
+Maxscore: 3277920293
+./day09_02 446 7152200  0.58s user 0.09s system 99% cpu 0.674 total
+#+END_EXAMPLE

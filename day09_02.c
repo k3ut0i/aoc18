@@ -17,14 +17,17 @@ struct board{
 struct game{
   struct board* b;
   int num_players;
-  int* score;
+  long long* score;
   int current_player;
   int current_marble;
 };
+struct game* new_game(int num_players);
 void print_game(struct game*);
+void print_board(struct game*);
 void print_scores(struct game*);
 void step_game(struct game*);
 void free_game(struct game*);
+long long max_score(struct game*);
 
 int main(int argc, char** argv){
   if(argc != 3)
@@ -32,21 +35,13 @@ int main(int argc, char** argv){
   const int n = atoi(argv[1]);
   int max = atoi(argv[2]);
 
-  /* Initialization */
-  struct game* g = malloc(sizeof (struct game));
-  g->b = malloc(sizeof(struct board));
-  g->b->current = new_marble(0);
-  g->num_players = n;
-  g->score = malloc(n* sizeof(int));
-  g->current_marble = 1;
-  g->current_player = 0;
-
-  while(g->current_marble <= max)
+  struct game* g = new_game(n);
+  while(g->current_marble <= max){
     step_game(g);
-  print_scores(g);
-  /*  print_game(g); */
-  /*  free_game(g);*/ /* TODO: Free functions needs debugging */
-  /*  fprintf(stdout, "%d %d\n", n, max); */
+    /*    print_board(g);*/
+  }
+  fprintf(stdout, "Maxscore: %lld\n", max_score(g));
+  return 0;
 }
 
 struct marble* new_marble(int n)
@@ -58,27 +53,50 @@ struct marble* new_marble(int n)
   return m;
 }
 
+struct game* new_game(int n)
+{
+  struct game* g = malloc(sizeof (struct game));
+  g->b = malloc(sizeof(struct board));
+  g->b->current = new_marble(0);
+  g->num_players = n;
+  g->score = malloc(n* sizeof(long long));
+  g->current_marble = 1;
+  g->current_player = 0;
+  return g;
+}
+
+void print_board(struct game* g)
+{
+  struct marble* head = g->b->current;
+  struct marble* marble_iter = head;
+  do{
+    fprintf(stdout, "%d ", marble_iter->i);
+    marble_iter = marble_iter->next;
+  }while(marble_iter != head);
+  
+  fputc('\n', stdout);
+}
+
 void print_game(struct game* g)
 {
   fprintf(stdout, "Game Players: %d Current Player: %d Current Marble: %d\n",
 	  g->num_players, g->current_player, g->current_marble);
-  struct marble* marble_iter = g->b->current;
-
-  for(int i = 0; i < g->current_marble; i++, marble_iter = marble_iter->next) {
-    fprintf(stdout, "%d ", marble_iter->i);
-    }
-  fputc('\n', stdout);
-  for(int i = 0; i < g->num_players; i++){
-    fprintf(stdout, "%d ", g->score[i]);
-  }
-  fputc('\n', stdout);
+  print_board(g);
+  print_scores(g);
 }
 
 void print_scores(struct game* g){
   for(int i = 0; i < g->num_players; i++){
-    fprintf(stdout, "%d ", g->score[i]);
+    fprintf(stdout, "%lld ", g->score[i]);
   }
   fputc('\n', stdout);  
+}
+long long max_score(struct game* g){
+  long long max = 0;
+  for(int i = 0; i < g->num_players; i++){
+    if(g->score[i] > max) max = g->score[i];
+  }
+  return max;
 }
 void step_game(struct game* g)
 {
@@ -92,7 +110,7 @@ void step_game(struct game* g)
     struct marble* right = seventh->next;
     left->next = right;
     right->previous = left;
-    g->score[g->current_player] = g->current_marble + seventh->i;
+    g->score[g->current_player] += g->current_marble + seventh->i;
     g->b->current = right;
   }else{
     struct marble* left = g->b->current->next;
@@ -103,8 +121,8 @@ void step_game(struct game* g)
     new->next = right;
     g->b->current = new;
   }
-  g->current_marble++;
   g->current_player = (g->current_player + 1) % g->num_players;
+  g->current_marble++;
 }
 
 void free_game(struct game* g)

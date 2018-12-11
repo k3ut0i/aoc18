@@ -1,8 +1,6 @@
 (eval-when (:load-toplevel :compile-toplevel :execute)
-  (ql:quickload :cl-ppcre)
-  (ql:quickload :alexandria)
-  (use-package (list :cl-ppcre
-		     :alexandria)))
+  (ql:quickload :cl-ppcre)  (ql:quickload :alexandria)
+  (use-package (list :cl-ppcre :alexandria)))
 
 (defun get-point (string)
   (register-groups-bind (x y vx vy)
