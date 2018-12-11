@@ -65,3 +65,56 @@ I have tried implementing this in *c* using circular doubly linked lists. It's a
 Maxscore: 3277920293
 ./day09_02 446 7152200  0.58s user 0.09s system 99% cpu 0.674 total
 #+END_EXAMPLE
+
+** Day 11
+
+For a given size *s* and Grid size *S*. The number of calculations for finding maximum power withing a square of size *s* is (S - s)(S - s) (s*s -1).
+Looking at the distribution of this as s changes we have
+#+BEGIN_SRC R :var name="day11-cals.jpeg" :results file
+    jpeg(filename=name,
+	 width=640, height=480, units="px", pointsize=12,
+	 quality=75,
+	 bg="white", res=NA)
+    size <- seq(1, 300)
+    cals <- (300 - size)^2 * (size^2 - 1)
+    barplot(cals, xlab="Power square size", ylab="Number of calculations",
+	    main="Without optimization")
+    name
+#+END_SRC
+
+#+RESULTS:
+[[file:day11-cals.jpeg]]
+
+This implementation runs for tens of minutes without reaching size 100, so it will likely run for more than an hour.
+
+Given that there are no more than 300*300 elements in the grid, there are a lot of redundant calculations taking place. For any give power square size *s*, the calculations are always sequential additions. So if we accumulate the sum of all previous rows in each cell of the grid, the sum of a give power square is the sum of row-sums, row-sums are the difference b/w the last cell and cell-before first. so we can cut down the number of calculations to (S-s)^2 * (2*s - 1), an order less.
+
+#+BEGIN_SRC R :results file :var fname="day11-calls-best.jpeg"
+  jpeg(filename=fname,
+       width=640, height=480, units="px", pointsize=12,
+       quality=75,
+       bg="white", res=NA)
+  size <- seq(1, 300)
+  cals <- (300 - size)^2 * (2*size - 1)
+  barplot(cals, xlab="Power square size", ylab="Number of calculations",
+	  main="Using accumulations to reduce per square cals from O(n^2) to O(n)")
+  fname
+#+END_SRC
+
+#+RESULTS:
+[[file:day11-calls-best.jpeg]]
+
+The run time for this implementation is
+#+BEGIN_EXAMPLE
+  CL-USER> (time (part2 1309))
+  Evaluation took:
+    50.156 seconds of real time
+    50.162501 seconds of total run time (50.102278 user, 0.060223 system)
+    [ Run times consist of 0.251 seconds GC time, and 49.912 seconds non-GC time. ]
+    100.01% CPU
+    85,066,931,941 processor cycles
+    1,897,395,792 bytes consed  
+  108
+  (233 271)
+  13
+#+END_EXAMPLE
