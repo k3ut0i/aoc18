@@ -113,3 +113,25 @@ The run time for the improved implementation is around 51 secs.
   (233 271)
   13
 #+END_EXAMPLE
+
+** Day 12
+Part 1 was a straight forward solution but my solution in handling growth at both ends was a bit inelegant. It took me a while to notice how big a number fifty billion is. But my solution is pretty straight forward without any multidimensional loops, so how can i optimize? A simple solution exists only if this game of life stabilizes. After plotting the data for some generations we can notice that *sum of pots* is an arithmetic sequence after some point, so it is just shifting to the right with a period 1.
+
+So the answer is C + (50000000000 - tc) * d. where *C* is the pots alive at time *tc* and *d* is the constant difference b/w generations.
+
+#+BEGIN_SRC R :var input="day12_generation_data.txt" :var output="day12_plot.jpeg" :results value file :exports results 
+  jpeg(filename=output,
+       width=640, height=480, units="px", pointsize=12,
+       quality=75,
+       bg="white", res=NA)
+  data <- read.table(file=input)
+  plot(data, xlab="nth generation", ylab="sum of no of pots alive",
+       main="Pots alive in a generation", col="red", type="l", lty=1, lwd=2)
+  abline(1023,186, lty=2)
+  legend(x="topleft", legend=c("gen data", "slope"), col=c("red", "black"),
+	 lty=c(1,2))
+  output
+#+END_SRC
+
+#+RESULTS:
+[[file:day12_plot.jpeg]]

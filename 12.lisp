@@ -111,9 +111,22 @@
 		(format t "~A " i)
 		(print-plants initial))))
 
+(defun sum-of-alive-pots (plants)
+  (loop :for i :below (array-dimension (plant-state-state plants) 0)
+     :unless (zerop (aref (plant-state-state plants) i))
+     :sum (- i (plant-state-left plants))))
+
 (defun part1 (n file)
   (let ((plants (get-input file)))
     (loop :repeat n :do (step-state plants))
-    (loop :for i :below (array-dimension (plant-state-state plants) 0)
-       :unless (zerop (aref (plant-state-state plants) i))
-       :sum (- i (plant-state-left plants)))))
+    (sum-of-alive-pots plants)))
+
+(defun generation-sum-data (n input-file output-file)
+  (let ((plants (get-input input-file)))
+    (with-open-file (s output-file
+		       :direction :output
+		       :if-exists :supersede)
+      (loop :for i :from 1 :to n
+	 :do (progn
+	       (step-state plants)
+	       (format s "~A ~A~%" i (sum-of-alive-pots plants)))))))
