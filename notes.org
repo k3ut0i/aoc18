@@ -135,3 +135,21 @@ So the answer is C + (50000000000 - tc) * d. where *C* is the pots alive at time
 
 #+RESULTS:
 [[file:day12_plot.jpeg]]
+
+** Day 14
+Memory problems for the first time. Previously it was always the problem with time constraints. SBCL throws a heap exhaustion error. I need to optimize the allocated array so it can just contain the digits. *char* should suffice, but 4 bits is just enough. Is there a way to handle fine grained memory constraints in lisp?
+
+Setting the array allocation to (unsigned-byte 4) for 4 bits of space worked out.
+
+#+BEGIN_EXAMPLE
+  CL-USER> (time (part2 "540561" 50000000))
+  Evaluation took:
+    22.250 seconds of real time
+    22.253924 seconds of total run time (22.003979 user, 0.249945 system)
+    [ Run times consist of 0.153 seconds GC time, and 22.101 seconds non-GC time. ]
+    100.02% CPU
+    37,737,461,424 processor cycles
+    1,379,115,728 bytes consed
+  
+  20254833
+#+END_EXAMPLE

@@ -1,4 +1,4 @@
-(defparameter *mlen* 10000000)
+(defparameter *mlen* 100000000)
 
 (defstruct scoreboard
   scores
@@ -10,7 +10,8 @@
   (funcall #'print-scoreboard obj stream))
 
 (defun new-scoreboard ()
-  (let ((sb (make-scoreboard :scores (make-array (list *mlen*))
+  (let ((sb (make-scoreboard :scores (make-array (list *mlen*)
+						 :element-type '(unsigned-byte 4))
 			     :first 0
 			     :second 1
 			     :len 2)))
