@@ -142,7 +142,8 @@
        :with start-cars = cars
        :repeat n
        :do (setf start-cars (step-map map start-cars))
-       :finally (return start-cars))))
+       :finally (progn (print-road-map map start-cars)
+		       (return start-cars)))))
 
 (defun repeat-until-last (file)
   (multiple-value-bind (map cars)
@@ -153,5 +154,7 @@
        :while (> (hash-table-count start-cars) 1)
        :do (progn (setf start-cars (step-map map start-cars))
 		  (incf ticks))
-       :finally (return (list (hash-table-alist start-cars)
-			      ticks)))))
+       :finally (progn
+		  (print-road-map map start-cars)
+		  (return (list (hash-table-alist start-cars)
+				ticks))))))
