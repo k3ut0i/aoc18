@@ -1,6 +1,6 @@
 (eval-when (:load-toplevel :compile-toplevel)
-  (ql:quickload :cl-ppcre)
-  (use-package (list :cl-ppcre)))
+  (ql:quickload :alexandria)
+  (use-package (list :alexandria)))
 
 (defparameter *unit-glyphs*
   '((#\# . :wall)
@@ -56,13 +56,23 @@
       (princ #\Newline stream))))
 
 (defclass game ()
-  ((game-map :type 'array :accessor game-map :initarg :map)
-   (units :type 'hash-table :accessor game-units :initarg :units)))
+  ((g-map :accessor game-map :initarg :map)
+   (units :type 'hash-table :accessor game-units :initarg :units)
+   (num-elves :initform 0 :type 'fixnum :accessor game-num-elves)
+   (num-goblins :initform 0 :type 'fixnum :accessor game-num-goblins)))
+
+(defmethod initialize-instance :after ((g game) &rest initargs)
+  (declare (ignore initargs))
+  (loop :for i :below (array-total-size (game-map g))
+     :do (case (row-major-aref (game-map g) i)
+	   ((:elf) (incf (game-num-elves g)))
+	   ((:goblin) (incf (game-num-goblins g))))))
 
 (defmethod print-object ((g game) stream)
   (print-map (game-map g) stream)
   (loop :for pos :being :each :hash-key :in (game-units g)
-     :do (format stream "~A ~A~%" pos (gethash pos (game-units g)))))
+     :do (format stream "~A ~A~%" pos (gethash pos (game-units g))))
+  (format stream "Elves: ~A Goblins: ~A~%" (game-num-elves g) (game-num-goblins g)))
 
 (defclass unit ()
   ((hp :type 'fixnum :accessor unit-hp :initarg :hp :initform 200)))
@@ -112,10 +122,12 @@
 	((> (length p1) (length p2)) p2)
 	(t 
 	 (let ((step-preference '((:u . 0) (:l . 1) (:r . 2) (:d . 3))))
-	   (if (eq (car p1) (car p2))
-	       (betterp (cdr p1) (cdr p2))
-	       (< (cdr (assoc (car p1) step-preference))
-		  (cdr (assoc (car p2) step-preference))))))))
+	   (if (and (null p1) (null p2))
+	       nil
+	       (if (eq (car p1) (car p2))
+		   (betterp (cdr p1) (cdr p2))
+		   (< (cdr (assoc (car p1) step-preference))
+		      (cdr (assoc (car p2) step-preference)))))))))
 
 (defun best-path (paths)
   (reduce (lambda (p1 p2)
@@ -142,8 +154,9 @@
 					       valid-neighbors)))))))
 (defun get-optimal-path (from to game)
   (loop
-     :with n = (+ (abs (- (car from) (car to)))
+     :for n :from (+ (abs (- (car from) (car to)))
 		     (abs (- (cdr from) (cdr to))))
+     :to (* 2 (array-dimension (game-map game) 0))
      :thereis (get-optimal-path-in from to game n)
      :do (incf n)))
 
@@ -157,17 +170,76 @@
   (if (eq type :elf) :goblin :elf))
 
 (defun enemy-in-range (point game  type)
-  (loop :for n :in (get-neighbors point)
+  (loop
+     :with min-hp = 200
+     :with min-pos = nil
+     :for n :in (get-neighbors point)
      :when (eq (aref (game-map game) (car (car n)) (cdr (car n))) (enemy type))
-     :do (return n)))
+     :do (progn
+	   (if (null min-pos) (setf min-pos n))
+	   (when (< (unit-hp (gethash (car n) (game-units game))) min-hp)
+	     (setf min-hp (unit-hp (gethash (car n) (game-units game))))
+	     (setf min-pos n)))
+     :finally (return min-pos)))
 
+(defun new-pos (pos direction)
+  (case direction
+    ((:u) (cons (car pos) (1- (cdr pos))))
+    ((:l) (cons (1- (car pos)) (cdr pos)))
+    ((:r) (cons (1+ (car pos)) (cdr pos)))
+    ((:d) (cons (car pos) (1+ (cdr pos))))
+    (t (error 'cannot-match-direction pos direction))))
 
 (defun move (from game)
   "Move an unit at FROM in GAME"
   (let* ((type (aref (game-map game) (car from) (cdr from)))
 	 (enemy-at (enemy-in-range from game type)))
+    (assert (or (eq type :elf) (eq type :goblin)))
     (if enemy-at
-	(list :attack enemy-at)
-	(car (best-path (mapcar (lambda (to)
-				  (get-optimal-path from (car to) game))
-				(all-in-range from game (enemy type))))))))
+	(attack (car enemy-at) game)
+	(let* ((direction
+		(car (best-path
+		      (remove-if #'null
+				 (mapcar (lambda (to)
+					   (get-optimal-path from (car to) game))
+					 (all-in-range from game (enemy type)))))))
+	       (unit (gethash from (game-units game))))
+	  (when direction
+	    (let ((newp (new-pos from direction)))
+	      (setf (aref (game-map game) (car from) (cdr from)) :empty)
+	      (setf (aref (game-map game) (car newp) (cdr newp)) type)
+	      (setf (gethash newp (game-units game)) unit)
+	      (remhash from (game-units game))
+	      (if (enemy-in-range newp game type)
+		  (move newp game))))))))
+
+(defun attack (at game)
+  (decf (unit-hp (gethash at (game-units game))) 3)
+  (when (< (unit-hp (gethash at (game-units game))) 0)
+    (remhash at (game-units game))
+    (case (aref (game-map game) (car at) (cdr at))
+      ((:elf) (decf (game-num-elves game)))
+      ((:goblin) (decf (game-num-goblins game))))
+    (setf (aref (game-map game) (car at) (cdr at)) :empty)))
+
+(defun step-round (game)
+  (loop :for pos :in (sort (hash-table-keys (game-units game))
+			   (lambda (p1 p2)
+			     (or (< (car p1) (car p2))
+				 (and (= (car p1) (car p2))
+				      (< (cdr p1) (cdr p2))))))
+     :do (move pos game))
+  game)
+
+(defun one-survives (game)
+  (loop
+     :with num-rounds = 0
+     :until (or (zerop (game-num-elves game))
+		   (zerop (game-num-goblins game)))
+     :do (step-round game)
+     :do (incf num-rounds)
+     :finally (return (values game num-rounds))))
+
+
+(defun part1 (file)
+  (one-survives (read-map file)))
