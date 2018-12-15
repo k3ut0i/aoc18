@@ -190,6 +190,35 @@
     ((:d) (cons (car pos) (1+ (cdr pos))))
     (t (error 'cannot-match-direction pos direction))))
 
+;;TODO: chop the move function, for better debuggin
+(defun move-unit (from to game)
+  (setf (aref (game-map game) (car to) (cdr to))
+	(aref (game-map game) (car from) (cdr from)))
+  (setf (aref (game-map game) (car from) (cdr from))
+	:empty)
+  (setf (gethash to (game-units game))
+	(gethash from (game-units game)))
+  (remhash from (game-units game)))
+
+(defun get-move (from game)
+  "What is the move for unit at FROM in GAME"
+  (let* ((type (aref (game-map game) (car from) (cdr from)))
+	 (enemy-at (enemy-in-range from game type)))
+    (or enemy-at (get-next-pos from game))))
+
+(defun get-next-pos (from game)
+  (cons :next
+	(car (best-path
+	      (remove-if #'null
+			 (mapcar
+			  (lambda (to)
+			    (get-optimal-path from (car to) game))
+			  (all-in-range from game
+					(enemy (aref (game-map game)
+						     (car from)
+						     (cdr from))))))))))
+
+;;TODO: replace this function with chopped up above functions
 (defun move (from game)
   "Move an unit at FROM in GAME"
   (let* ((type (aref (game-map game) (car from) (cdr from)))
@@ -228,7 +257,7 @@
 			     (or (< (car p1) (car p2))
 				 (and (= (car p1) (car p2))
 				      (< (cdr p1) (cdr p2))))))
-     :do (move pos game))
+     :do (when (gethash pos (game-units game) nil) (move pos game)))
   game)
 
 (defun one-survives (game)
