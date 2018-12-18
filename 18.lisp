@@ -2,10 +2,10 @@
   (ql:quickload '(:alexandria))
   (use-package '(:alexandria)))
 
-(defvar *unit-chars*
-  '((#\# . :tree)
+(defparameter *unit-chars*
+  '((#\# . :lumber)
     (#\. . :empty)
-    (#\| . :lumber)))
+    (#\| . :tree)))
 
 (defun unit2char (u)
   (car (find u *unit-chars* :key #'cdr)))
@@ -71,3 +71,23 @@
 	  (setf (aref new-area i j)
 		(next-unit (aref area i j)
 			   (get-neighbors area i j))))))))
+
+(defun resource-value (area)
+  (loop :with trees = 0 :and lumber = 0
+     :for i :below (array-total-size area)
+     :do (case (row-major-aref area i)
+	   ((:tree) (incf trees))
+	   ((:lumber) (incf lumber)))
+     :finally (return (* trees lumber))))
+
+(defun part1 (n file &optional  (analyze-p nil) (analysis-file "day18_data.txt"))
+  (with-open-file (s analysis-file
+		     :direction :output
+		     :if-exists :supersede)
+    (loop
+       :with area = (read-area file)
+       :for i :below n
+       :do (setf area (step-minute area))
+       :do (when analyze-p
+	     (format s "~A ~A~%" i (resource-value area)))
+       :finally (return (resource-value area)))))

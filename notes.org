@@ -244,3 +244,50 @@ I tried to re-implement the flowing part as a part of backtracking solution usin
 
 But heap is still exhausted. Logic dictates my program is correct, but Lisp isn't really suitable for this kind of logic. I should have tried to write my program more imperatively.
 Sample problem works perfectly so I'll try to another implementation later.
+
+** Day18
+   By plotting the resource value after n minutes, we can see that resource value converges to a band gap. 
+#+BEGIN_SRC R :var input="day18_data.txt" :var output="day18_plot.jpeg" :results value file :exports results 
+  jpeg(filename=output,
+       width=640, height=480, units="px", pointsize=12,
+       quality=75,
+       bg="white", res=NA)
+  data <- read.table(file=input)
+  plot(data, xlab="nth minute", ylab="resource value",
+       main="Resource value in time", col="blue", type="l", lty=1, lwd=2)
+  output
+#+END_SRC
+
+#+RESULTS:
+[[file:day18_plot.jpeg]]
+
+Lets try zooming in after at the end
+
+#+BEGIN_SRC R :var input="day18_data.txt" :var output="day18_plot2.jpeg" :results value file :exports results 
+  jpeg(filename=output,
+       width=640, height=480, units="px", pointsize=12,
+       quality=75,
+       bg="white", res=NA)
+  data <- read.table(file=input)
+  dataZoomed <- subset(data, data$V1 >= 9500)
+  plot(dataZoomed, xlab="nth minute", ylab="resource value",
+       main="resource value time line", col="green", type="l", lty=1, lwd=2)
+  output
+#+END_SRC
+
+#+RESULTS:
+[[file:day18_plot2.jpeg]]
+
+In a hundred minute interval the resource value fluctuates more than 3 times.
+So I'm assuming the period is less than 30 minutes. Looking at the tail end of the data generated I've noticed that 9970 has 189994 and 9998 again has 189994. So the period is 28 minutes.
+#+BEGIN_SRC elisp :export both
+  (let ((diff (- 1000000000 9970)))
+    (mod diff 28))
+#+END_SRC
+
+#+RESULTS:
+: 18
+
+So the Resource value is the same as at 9970 + 18 = 9988 i.e., 190162.
+That was the wrong answer? why?
+Hmm, the data in analysis file is zero indexed so we need one less minutes resource value. so the value of 9987 i.e., 190820
