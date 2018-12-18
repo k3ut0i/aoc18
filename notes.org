@@ -280,7 +280,7 @@ Lets try zooming in after at the end
 
 In a hundred minute interval the resource value fluctuates more than 3 times.
 So I'm assuming the period is less than 30 minutes. Looking at the tail end of the data generated I've noticed that 9970 has 189994 and 9998 again has 189994. So the period is 28 minutes.
-#+BEGIN_SRC elisp :export both
+#+BEGIN_SRC elisp :exports both
   (let ((diff (- 1000000000 9970)))
     (mod diff 28))
 #+END_SRC
