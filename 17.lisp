@@ -62,9 +62,10 @@
 	   :do (loop :for j :from (caadr e) :to (cadadr e)
 		  :do (loop :for i :from (caar e) :to (cadar e)
 			 :do (setf (aref garray (- i min-x) (- j min-y)) :clay))))
+	(setf (aref garray (- 500 min-x) (- 0 min-y)) :water-source)
 	garray))))
 
-(defun print-ground (g stream &optional (type nil))
+(defun print-ground (g &optional (stream *standard-output*) (type nil))
   (destructuring-bind (w h)
       (array-dimensions g)
     (when type
@@ -76,6 +77,7 @@
 	(princ (case (aref g i j)
 		 ((:sand) (if type 0 #\.))
 		 ((:clay) (if type 255 #\#))
+		 ((:water-source) (if type 50 #\+))
 		 ((:still-water) (if type 200 #\~))
 		 ((:flowing-water) (if type 100 #\|))
 		 (t (error "Unknown case in ground ~A" (aref g i j))))
@@ -88,3 +90,81 @@
 		     :direction :output
 		     :if-exists :supersede)
     (print-ground g s t)))
+
+(defun push-water (g i j)
+  (when (and (array-in-bounds-p g i j)
+	     (eq (aref g i j) :sand))
+    (setf (aref g i j) :flowing-water)))
+
+
+(defun num-water-squares (g)
+  (loop :for i :below (array-total-size g)
+     :count (or (eq (row-major-aref g i) :still-water)
+		(eq (row-major-aref g i) :flowing-water))))
+
+(defun get-lvl-boundry (g i j)
+  (let (left-b 
+	right-b)
+    (loop
+       :for left :downfrom i :downto 0
+       :while (and (or (eq (aref g left j) :sand)
+		       (eq (aref g left j) :flowing-water))
+		   (or (eq (aref g left (1+ j)) :clay)
+		       (eq (aref g left (1+ j)) :still-water)))
+       :finally (setq left-b left))
+    (loop
+       :for right :from i :to (array-dimension g 0)
+       :while (and (or (eq (aref g right j) :sand)
+		       (eq (aref g right j) :flowing-water))
+		   (or (eq (aref g right (1+ j)) :clay)
+		       (eq (aref g right (1+ j)) :still-water)))
+       :finally (setq right-b right))
+    (list left-b right-b)))
+
+(defun flow-water (g i j)
+  (if (array-in-bounds-p g i (1+ j))
+      (case (aref g i (1+ j))
+	((:flowing-water)
+	 (destructuring-case (flow-water g i (1+ j))
+	   ((:out-of-bounds) (list :out-of-bounds))
+	   ((:filled-up) (flow-water g i j))))
+	((:still-water :clay)
+	 (destructuring-bind (l r)
+	     (get-lvl-boundry g i j)
+	   (cond ((and (eq (aref g l j) :clay)
+		       (eq (aref g r j) :clay))
+		  (loop :for idx :from (1+ l) :below r
+		     :do (setf (aref g idx j) :still-water))
+		  (list :filled-up))
+		 ((eq (aref g l j) :clay)
+		  (loop :for idx :from (1+ l) :to r
+		     :do (setf (aref g idx j) :flowing-water))
+		  (flow-water g r j))
+		 ((eq (aref g r j) :clay)
+		  (loop :for idx :from l :below r
+		     :do (setf (aref g idx j) :flowing-water))
+		  (flow-water g l j))
+		 (t (loop :for idx :from l :to r
+		       :do (setf (aref g idx j) :flowing-water))
+		    (let ((flow-left (flow-water g l j))
+			  (flow-right (flow-water g r j)))
+		      (if (and (eq (car flow-left) :filled-up)
+			       (eq (car flow-right) :filled-up))
+			  (flow-water g i j)
+			  (list :out-of-bounds)))))))
+	((:sand)
+	 (setf (aref g i (1+ j)) :flowing-water)
+	 (destructuring-case (flow-water g i (1+ j))
+	   ((:out-of-bounds) (list :out-of-bounds))
+	   ((:filled-up) (flow-water g i j)))))
+      (list :out-of-bounds)))
+
+(defun part1 (file)
+  (let* ((g (make-ground file))
+	 (water-source-idx 
+	  (loop :for idx :from 0 :below (array-dimension g 0)
+	     :when (eq (aref g idx 0) :water-source)
+	     :do (return idx))))
+    (setf (aref g water-source-idx 1) :flowing-water)
+    (flow-water g water-source-idx 1)
+    (num-water-squares g)))

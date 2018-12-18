@@ -235,3 +235,12 @@ Run times.
   
   #(667 667 3 2)
 #+END_EXAMPLE
+
+** Day17
+I tried to re-implement the flowing part as a part of backtracking solution using just recursive functions. But the runtime is horrible. Stack and heap exhaustion for the given input. I tried with almost a 1GB of stack size and 3GB of heap size
+#+BEGIN_EXAMPLE
+  sbcl --control-stack-size 1000  --dynamic-space-size 3072
+#+END_EXAMPLE 
+
+But heap is still exhausted. Logic dictates my program is correct, but Lisp isn't really suitable for this kind of logic. I should have tried to write my program more imperatively.
+Sample problem works perfectly so I'll try to another implementation later.
