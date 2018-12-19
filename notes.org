@@ -291,3 +291,42 @@ So I'm assuming the period is less than 30 minutes. Looking at the tail end of t
 So the Resource value is the same as at 9970 + 18 = 9988 i.e., 190162.
 That was the wrong answer? why?
 Hmm, the data in analysis file is zero indexed so we need one less minutes resource value. so the value of 9987 i.e., 190820
+
+** Day19
+I took most of the opcode implementation stuff from day16 problem.
+Part 1 run time.
+#+BEGIN_EXAMPLE
+  (time (run-prog (read-program "input_19.txt")))
+  Evaluation took:
+    1.818 seconds of real time
+    1.818684 seconds of total run time (1.818684 user, 0.000000 system)
+    100.06% CPU
+    3,084,659,125 processor cycles
+    32,768 bytes consed
+  
+  #(1530 1019 1018 257 1019 1)
+#+END_EXAMPLE
+
+Part 2 is taking very long. Why?. I think it's looping over very large end condition. I should take a look at how the register values are changing.
+
+Instructions are just looping mostly around 3,4,5,6, 8,9,10,11 instructions. Let us look at these instructions.
+#+BEGIN_EXAMPLE
+  01  seti 1 3 1  reg1 = 1
+  02  seti 1 2 4  reg4 = 1
+  03  mulr 1 4 5  reg5 = reg4 * reg1
+  04  eqrr 5 2 5  Is reg5 and reg2 equal in reg5
+  05  addr 5 3 3  Increase reg3 value by reg5 amount
+  06  addi 3 1 3  Jump over 7th instruction
+  07  addr 1 0 0  reg0 = reg0 + reg1
+  08  addi 4 1 4  Increase reg4 value
+  09  gtrr 4 2 5  Is reg4 greater than reg2 in reg5
+  10  addr 3 5 3  If reg5 is true goto 12
+  11  seti 2 6 3  else goto 02
+  12  addi 1 1 1  reg1++
+  13  gtrr 1 2 5  reg1 > reg2
+  14  addr 5 3 3  If above true Jump next to end
+  15  seti 1 0 3  else goto 01
+  16  mulr 3 3 3  End
+#+END_EXAMPLE
+
+After drawing a simple flow chart we can see that this part of the problem is simple finding two numbers reg1 and reg4 such that reg1 * reg4 is reg2, i.e., divisors of reg2. and when it finds them reg0 = reg0 + reg1. So reg0 is sum of all divisors of reg2(10551418).

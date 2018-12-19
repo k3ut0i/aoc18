@@ -121,7 +121,7 @@
        :finally (setq right-b right))
     (list left-b right-b)))
 
-(defun flow-water (g i j)
+(defun flow-water-very-inefficient (g i j)
   (if (array-in-bounds-p g i (1+ j))
       (case (aref g i (1+ j))
 	((:flowing-water)
