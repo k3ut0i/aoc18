@@ -28,25 +28,6 @@
      :do (print-tree node (1+ indent-level) stream)
      :end))
 
-(defun room-points (direction-tree &optional (initial-point (cons 0 0)))
-  (loop
-     :with all-points = (list initial-point)
-     :and current-point = initial-point
-     :for node :in direction-tree
-     :if (atom node)
-     :do (case node
-	   ((#\N) (incf (cdr current-point) 2))
-	   ((#\E) (incf (car current-point) 2))
-	   ((#\S) (decf (cdr current-point) 2))
-	   ((#\W) (decf (car current-point) 2)))
-     :and :do (push (copy-list current-point) all-points)
-     :else
-     :do (setf all-points (append (room-points node
-					       (copy-list current-point))
-				  all-points))
-     :end
-     :finally (return all-points)))
-
 (defun get-points (direction-tree &optional (initial-point (cons 0 0)))
   (loop
      :with room-points = (list initial-point)
@@ -168,6 +149,7 @@
 	    (when (> room-value max-distance)
 	      (setq max-distance room-value))))))))
 
+;; Part2
 (defun num-of-rooms->=n (mark-array n)
   (destructuring-bind (w h)
       (array-dimensions mark-array)

@@ -334,6 +334,7 @@ After drawing a simple flow chart we can see that this part of the problem is si
 ** Day20
 [2018-12-20 Thu]
 Basic visualization done. Crude path length implementation partly done.
+
 [2018-12-21 Fri]
 Got it done after a good nights sleep.
 #+BEGIN_SRC lisp :exports both
@@ -350,3 +351,40 @@ Got it done after a good nights sleep.
 
 #+RESULTS:
 | 4360 | 8509 |
+** Day21
+#+BEGIN_EXAMPLE
+  00 seti 123 0 3         reg3 = 123
+  01 bani 3 456 3	  reg3 = reg3 & 456
+  02 eqri 3 72 3	  reg3 = reg3 eq 72
+  03 addr 3 2 2		  if above true then jump to 05
+  04 seti 0 0 2		  else jump to 01
+  05 seti 0 5 3		  reg3 = 0
+  06 bori 3 65536 1	  reg1 = reg3 | 65536
+  07 seti 10373714 2 3	  reg3 = 10373714
+  08 bani 1 255 5	  reg5 = reg1 & 255
+  09 addr 3 5 3 	  reg3 = reg3 + reg5
+  10 bani 3 16777215 3	  reg3 = reg3 & 16777215
+  11 muli 3 65899 3  	  reg3 = reg3 * 65899
+  12 bani 3 16777215 3	  reg3 = reg3 & 16777215
+  13 gtir 256 1 5	  reg1 < 256
+  14 addr 5 2 2 	  if above true jump to 16
+  15 addi 2 1 2		  else jump to 17
+  16 seti 27 7 2	  goto 28
+  17 seti 0 3 5		  reg5 = 0
+  18 addi 5 1 4		  reg4 = reg5 + 1
+  19 muli 4 256 4	  reg4 = reg4 * 256
+  20 gtrr 4 1 4 	  reg4 > reg1
+  21 addr 4 2 2		  if above true then jump 23
+  22 addi 2 1 2		  else jump 24
+  23 seti 25 4 2	  goto 26
+  24 addi 5 1 5		  reg5 = reg5 + 1
+  25 seti 17 0 2	  goto 18
+  26 setr 5 2 1		  reg1 = reg5
+  27 seti 7 4 2		  goto 08
+  28 eqrr 3 0 5		  reg3 eq reg0
+  29 addr 5 2 2		  if above true end
+  30 seti 5 7 2		  else goto 06
+
+#+END_EXAMPLE
+
+Look at this program reg0 is not modified and the program halts when reg3 and reg0 are equal. so I just printed out when eqrr instruction is executed. The first invocation value of reg3 is the answer to part1. Given that this piece of program is a mathematical equation to just generate numbers, reg3 value must repeat at some point. The last value to not repeat should be the answer to part2. Now the problem becomes, how to find it. I checked for almost 10 billion executions, but reg3 did not repeat. Is there a more mathematical solution?  
