@@ -62,7 +62,6 @@
 (defun op-eqri (a b c)
   (set-reg c (if (= (get-reg a) b) 1 0)))
 (defun op-eqrr (a b c)
-  (format *standard-output* "~A ~A~%" (get-reg a) (get-reg b))
   (set-reg c (if (= (get-reg a) (get-reg b)) 1 0)))
 ;;; End of code written for 16th problem
 
