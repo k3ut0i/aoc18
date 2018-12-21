@@ -334,3 +334,19 @@ After drawing a simple flow chart we can see that this part of the problem is si
 ** Day20
 [2018-12-20 Thu]
 Basic visualization done. Crude path length implementation partly done.
+[2018-12-21 Fri]
+Got it done after a good nights sleep.
+#+BEGIN_SRC lisp :exports both
+  (load "20.lisp")
+  (list
+   ;; Part1
+   (get-max-path (multiple-value-call #'mark-maze
+		   (create-maze "input_20.txt")))
+   ;; Part2
+   (num-of-rooms->=n (multiple-value-call #'mark-maze
+		       (create-maze "input_20.txt"))
+		     1000))
+#+END_SRC
+
+#+RESULTS:
+| 4360 | 8509 |

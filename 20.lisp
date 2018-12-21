@@ -126,25 +126,56 @@
 	(princ (aref maze i (- h j 1))))
       (princ #\Newline))))
 
+(defun get-adjoined-rooms (maze i j)
+  (let ((adj-rooms nil))
+    (when (eq (aref maze i (1+ j)) #\|)
+      (push (cons i (+ j 2)) adj-rooms))
+    (when (eq (aref maze i (1- j)) #\|)
+      (push (cons i (- j 2)) adj-rooms))
+    (when (eq (aref maze (1+ i) j) #\|)
+      (push (cons (+ i 2) j) adj-rooms))
+    (when (eq (aref maze (1- i) j) #\|)
+      (push (cons (- i 2) j) adj-rooms))
+    adj-rooms))
+
+
 (defun mark-maze (maze center)
+  (let ((mark-array (make-array (array-dimensions maze)
+				:element-type 'fixnum
+				:initial-element (array-total-size maze))))
+    (setf (aref mark-array (car center) (cdr center)) 0)
+    (labels ((mark-next (i j)
+	       (let ((adjacent-rooms (get-adjoined-rooms maze i j)))
+		 (loop :for room :in adjacent-rooms
+		    :do (when (> (aref mark-array (car room) (cdr room))
+				 (aref mark-array i j))
+			  (setf (aref mark-array (car room) (cdr room))
+				(1+ (aref mark-array i j)))
+			  (mark-next (car room) (cdr room)))))))
+      (mark-next (car center) (cdr center))
+      mark-array)))
+
+;; Part1
+(defun get-max-path (mark-array)
   (destructuring-bind (w h)
-      (array-dimensions maze)
-    (let ((mark-array (make-array (array-dimensions maze)
-				  :element-type 'fixnum
-				  :initial-element (array-total-size maze))))
-      (setf (aref mark-array (car center) (cdr center)) 0)
-      (labels ((mark-start (i j)
-		 (when (eq (aref maze i (1+ j)) #\|)
-		   (when (> (aref mark-array i (+ j 2))
-			    (+ (aref mark-array i j) 1))
-		     (setf (aref mark-array i (+ j 2))
-			   (+ (aref mark-array i j) 1))
-		     (mark-start i (+ j 2))))
-		 ;;FIXME: handle all direction not just north
-		 ;; i (1- j)
-		 ;; (1+ i) j
-		 ;; (1- i) j
-		 ))
-	(mark-start (car center) (cdr center)))
-      (loop :for i :below (array-total-size mark-array)
-	 :minimizing (row-major-aref mark-array i)))))
+      (array-dimensions mark-array)
+    (let ((max-distance 0))
+      (dotimes (j (floor h 2) max-distance)
+	(dotimes (i (floor w 2))
+	  (let ((room-value (aref mark-array
+				  (1+ (* 2 i))
+				  (1+ (* 2 j)))))
+	    (when (> room-value max-distance)
+	      (setq max-distance room-value))))))))
+
+(defun num-of-rooms->=n (mark-array n)
+  (destructuring-bind (w h)
+      (array-dimensions mark-array)
+    (let ((num-rooms 0))
+      (dotimes (j (floor h 2) num-rooms)
+	(dotimes (i (floor w 2))
+	  (when (>= (aref mark-array
+			  (1+ (* 2 i))
+			  (1+ (* 2 j)))
+		    n)
+	    (incf num-rooms)))))))
