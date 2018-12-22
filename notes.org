@@ -390,7 +390,7 @@ Got it done after a good nights sleep.
 Look at this program reg0 is not modified and the program halts when reg3 and reg0 are equal. so I just printed out when eqrr instruction is executed. The first invocation value of reg3 is the answer to part1. Given that this piece of program is a mathematical equation to just generate numbers, reg3 value must repeat at some point. The last value to not repeat should be the answer to part2. Now the problem becomes, how to find it. I checked for almost 10 billion executions, but reg3 did not repeat. Is there a more mathematical solution?  
 
 Let us look at the flow chart of this program. r3 is bounded, so it must repeat at some point. The furthest generated value must be the answer to the problem. Now how to find it?
-#+BEGIN_SRC plantuml :file "day21_flow.png" :exports both
+#+BEGIN_SRC plantuml :file "day21_flow.png" :exports results
   (*) --> "r3 = 123"
   --> "r3 = r3 & 456"
   --> if "r3 == 72" then
@@ -404,7 +404,7 @@ Let us look at the flow chart of this program. r3 is bounded, so it must repeat 
   --> "r3 = r3 + r5"
   --> "r3 = r3 & 16777215"
   --> "r3 = r3 * 65899"
-  --> "r3 = r3 & 16777215"
+  --> "r3 = r3 & 16777215 (again)"
   --> if "r1 < 256" then
 	  -->[true] if "r3 == r0" then
 		  -->[true] (*)
@@ -412,14 +412,14 @@ Let us look at the flow chart of this program. r3 is bounded, so it must repeat 
 		  -->[false] "r1 = r3 | 65536"
 	  endif
   else
-	  -->[false] "r5 = 0"
+  -->[false] "r5 = 0"
   endif
   "r5 = 0" --> "r4 = r5 + 1"
   --> "r4 = r4 * 256"
   --> if "r4 > r1" then
-	  -->[true] "r1 = r5"
+  -->[true] "r1 = r5"
   else
-	  -->[false] "r5 = r5 + 1"
+  -->[false] "r5 = r5 + 1"
   endif
   "r5 = r5 + 1" --> "r4 = r5 + 1"
   "r1 = r5" --> "r5 = r1 & 255"
@@ -427,3 +427,19 @@ Let us look at the flow chart of this program. r3 is bounded, so it must repeat 
 
 #+RESULTS:
 [[file:day21_flow.png]]
+
+Even after writing a c program to just run this logic, I can't find any duplicates after a minute. So this approach to the problem might be the wrong one. The numeric literals in the program seem to be powers of 2. So the bitwise *and* and *or* might just be working manipulating bits.
+#+BEGIN_SRC elisp :results output :exports both
+  (let ((numeric-literals '(255 256 65536 65899 10373714 16777215)))
+    (dolist (l numeric-literals)
+      (princ (format "%9d %X\n" l l))))
+
+#+END_SRC
+
+#+RESULTS:
+:       255 FF
+:       256 100
+:     65536 10000
+:     65899 1016B
+:  10373714 9E4A52
+:  16777215 FFFFFF
