@@ -3,7 +3,10 @@
   (use-package '(:cl-ppcre)))
 
 (defstruct region
-  type gi el)
+  type ; Type
+  gi   ; Geologic Index
+  el   ; Erosion Level
+  pl)  ; Path length from Mouth for each tool
 
 (defparameter *region-types*
   '((#\. . :rocky)
@@ -23,9 +26,9 @@
 	  ("target: (.*),(.*)" (read-line s nil nil))
 	(destructuring-bind (depth tx ty)
 	    (mapcar #'read-from-string (list depth-str tx-str ty-str))
-	  (let ((array-size (floor (* (1+ (max tx ty))
-				      size-multiplier))))
-	    (list (make-array (list array-size array-size)
+	  (let ((array-size (list (floor (* (1+ tx) size-multiplier))
+				  (floor (* (1+ ty) size-multiplier)))))
+	    (list (make-array array-size
 			      :element-type 'region)
 		  depth
 		  (cons tx ty))))))))
@@ -37,7 +40,8 @@
     (loop :for idx :below (array-total-size maze)
        :do (setf (row-major-aref maze idx) (make-region :type :empty
 							:gi -1
-							:el -1)))
+							:el -1
+							:pl nil)))
     
     (setf (region-gi (aref maze 0 0)) 0)
     (setf (region-el (aref maze 0 0)) (mod depth 20183))
@@ -110,3 +114,34 @@
       (create-empty-maze file 1)
     (set-region-types maze depth target)
     (risk-level maze target)))
+
+(defun move-cost (maze from to src-tool dest-tool)
+  "Cost to move FROM with SRC-TOOL to TO with DEST-TOOL in MAZE.
+Assuming the FROM and TO are straight neighbors."
+  (let ((dest-type (region-type (aref maze (car to) (cdr to)))))
+    (cond ((or (and (eq dest-type :rocky)
+		    (eq dest-tool :neither))
+	       (and (eq dest-type :wet)
+		    (eq dest-tool :torch))
+	       (an (eq dest-type :narrow)
+		   (eq dest-tool :gear)))
+	   nil)
+	  ((eq dest-tool src-tool) 1)
+	  (t 8))))
+
+
+(defun set-min-paths-from-neighbors (maze i j)
+  "Set the path costs at co-ordinates (I,J).
+Look at the neighboring regions and set the path costs for all tools."
+  (labels ((get-neighbors (i j)
+	     (remove-if-not (lambda (p)
+			      (array-in-bounds-p maze (car p) (cdr p)))
+			    (list (cons (1- i) j)
+				  (cons (1+ i) j)
+				  (cons i (1- j))
+				  (cons i (1+ j))))))
+    (destructuring-bind (w h)
+	(array-dimensions maze)
+      (dotimes (j h)
+	(dotimes (i w)
+	  )))))

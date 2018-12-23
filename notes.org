@@ -443,3 +443,18 @@ Even after writing a c program to just run this logic, I can't find any duplicat
 :     65899 1016B
 :  10373714 9E4A52
 :  16777215 FFFFFF
+** Day22
+[2018-12-23 Sun] For part 2 of the question, I'm trying to iterating over a 2d array. I need to iterate over incremental square sides. For example consider a  6x4 array. The following should be the iteration order of elements.
+#+BEGIN_EXAMPLE
+  012345
+  112345
+  222345
+  333345
+#+END_EXAMPLE
+So a NxN array should be done in N iterations and a MxN array should be done in max(M,N) iterations. Now what is an elegant way to do this iteration?
+
+nth iteration has 2n+1 elements. n vertical, n horizontal and 1 on the corner. Each co-ordinate is 
+#+BEGIN_EXAMPLE
+  i/n == 1 ?(i%n, n) : (n, i%n) for i = 0 .. 2n-1
+#+END_EXAMPLE
+
