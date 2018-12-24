@@ -57,7 +57,7 @@
   (loop :for b :in bot-list
      :count (<= (distance point b) (car (last b)))))
 
-(defun part2 (bot-list)
+(defun part2-crude (bot-list)
   (destructuring-bind (xmin xmax ymin ymax zmin zmax)
       (boundries bot-list)
     (loop
@@ -71,3 +71,4 @@
 			     (setq max-val d)
 			     (setq max-point (list x y z))))))
        :finally (return (list max-point max-val)))))
+
