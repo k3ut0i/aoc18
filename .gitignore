@@ -1,3 +1,6 @@
 *.fasl
 .\~
 *.txt
+/inputs/
+*.beam
+/erlang/inputs

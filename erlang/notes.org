@@ -1,0 +1,3 @@
+* Erlang Solutions for AOC18
+** Day 01
+   Part one is a simple ~foldl~ but the second part takes a bit of time since I used ~lists:member~ instead of some kind of set lookup for searching repetition.
