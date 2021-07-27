@@ -1,23 +1,8 @@
 -module(day01).
 -export([part1/1, 
-	 part2/1,
-	read_lines/1]).
+	 part2/1]).
+-import(util, [read_lines/1]).
 
-read_lines(File) ->
-    {ok, Fh} = file:open(File, [read]),
-    Ls = read_lines(Fh, []),
-    file:close(Fh),
-    Ls.
-read_lines(Fh, Ls) ->
-    case io:get_line(Fh, "") of
-	eof ->
-	    lists:reverse(Ls);
-	{error, Des} ->
-	    error(Des);
-	Line ->
-	    read_lines(Fh, [string:chomp(Line)|Ls])
-    end.
-    
 part1(File) ->
     Nums = lists:map(fun erlang:list_to_integer/1,
 		     read_lines(File)),

@@ -4,3 +4,4 @@
 /inputs/
 *.beam
 /erlang/inputs
+/erlang/erl_crash.dump

@@ -1,0 +1,3 @@
+:name "aoc18_erl"
+:node-sname "aoc18"
+:lib-dirs '(".")
