@@ -1,3 +1,9 @@
 * Erlang Solutions for AOC18
 ** Day 01
    Part one is a simple ~foldl~ but the second part takes a bit of time since I used ~lists:member~ instead of some kind of set lookup for searching repetition.
+
+** Day 02
+   ~dict~ for key-value pairs, some ~lists~ functions for iteration.
+
+** Day 03
+   Used ~ets~ to store the claims after reading them from file. It wasn't necessary as such, I could have used a list to do it. The second part was easy enough and fast. The first part took twenty minutes to run. My lisp solution was quick for the first part and the second took a few seconds. So I guess the model you choose for the implementation in the beginning is very dependent on the type of language.
