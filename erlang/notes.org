@@ -7,3 +7,8 @@
 
 ** Day 03
    Used ~ets~ to store the claims after reading them from file. It wasn't necessary as such, I could have used a list to do it. The second part was easy enough and fast. The first part took twenty minutes to run. My lisp solution was quick for the first part and the second took a few seconds. So I guess the model you choose for the implementation in the beginning is very dependent on the type of language.
+   I have re-implemented the ~count/2~ function for the first part. This implementation used arrays and thus more memory but gave the solution in a few seconds.
+
+** Day 04
+   What a mess. I did not read the assumption all the asleep and awake times occur during the midnight hour 00:00 - 00: 59 at first.
+   I am focusing on the language more than the problem itself. So the solution is a bit hairy. I think it will be a lot more clean and elegant why my language fluency increases and the code becomes idiomatic.

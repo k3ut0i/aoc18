@@ -93,7 +93,8 @@ is_twice(T, N, K, one) ->
 	    is_twice(T, N, ets:next(T, K), one)
     end.
 
-
+%% XXX: Extremely inefficient - 20 minutes to run on my core2duo
+%% but uses almost no extra memory after ets table is initialized
 count(T) ->
     count(T, 0, 0).
 count(T, 1000000, A) ->
@@ -109,9 +110,34 @@ count(T, N, A) when N < 1000000->
 	false ->
 	    count(T, N+1, A)
     end.
+
+explode_rect({H1, H2}, {V1, V2}) ->
+    [{X, Y} || X <- lists:seq(H1, H2),
+	       Y <- lists:seq(V1, V2)].
+%%% XXX: runs in a couple of seconds.
+count2(T) ->
+    count2(T, array2d:new(1000, 1000), ets:first(T)).
+count2(T, {A, _, _}, '$end_of_table') -> %% using array2d internal rep here
+    array:foldl(fun (_, X, C) -> %% to lazy to wrap it in array2d
+			if X > 1 -> C+1;
+			   X =< 1 -> C
+			end
+		end,
+		0,
+		A);
+count2(T, A, K) ->
+    [[H, V]] = ets:match(T, {K, '$1', '$2', '_'}),
+    Anew = lists:foldl(fun({X, Y}, Ai) -> 
+			       array2d:set(Ai,
+					   1+array2d:get(Ai, X, Y), X, Y)
+		       end,
+		       A,
+		       explode_rect(H, V)),
+    count2(T, Anew, ets:next(T, K)).
     
+
 main(File) ->
     T = get_claims(File),
     process_claims(T),
     [[ZeroId]] = ets:match(T, {'$1', '_', '_', 0}),
-    {ZeroId, count(T)}.
+    {ZeroId, count2(T)}.

@@ -101,7 +101,7 @@
 	     (when (> minutes max_value)
 	       (setq max_id id
 		     max_value minutes)))
-       :finally (return (* max_id (get-max (gethash max_id sleeps)))))))
+       :finally (return (cons (* max_id (get-max (gethash max_id sleeps))) max_id)))))
 
 (defun part2 (file)
   (let ((sleeps (get-event-hashes file)))

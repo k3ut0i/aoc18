@@ -1,6 +1,7 @@
 -module(util).
 -export([read_lines/1,
-	search_pair/2]).
+	search_pair/2,
+	 freq_count/1]).
 
 read_lines(File) ->
     {ok, Fh} = file:open(File, [read]),
@@ -23,3 +24,9 @@ search_pair(_, []) ->
 search_pair(F, [X|Xs]) ->
     LX = lists:filter(fun (A) -> F(X, A) end, Xs),
     lists:map(fun (A) -> {X, A} end, LX) ++ search_pair(F, Xs).
+
+freq_count([]) ->
+    dict:new();
+freq_count([X|Xs]) ->
+    dict:update(X, fun (V) -> V + 1 end, 1, freq_count(Xs)).
+
