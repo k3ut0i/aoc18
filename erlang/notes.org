@@ -12,3 +12,17 @@
 ** Day 04
    What a mess. I did not read the assumption all the asleep and awake times occur during the midnight hour 00:00 - 00: 59 at first.
    I am focusing on the language more than the problem itself. So the solution is a bit hairy. I think it will be a lot more clean and elegant why my language fluency increases and the code becomes idiomatic.
+
+** Day 05
+   A bit of non-trivially-deterministic algorithm in ~react/1~. Rest is just ~foldl~, ~filter~ and ~map~.
+   
+** Day 06
+   I solved the lisp version using heuristics that some how worked. Now I want to actually work at a solution.
+   - I should ignore the points with infinite area. So I need to recognize them. If the metric is euclidean then the points of convex hull of this collection will have infinite area.
+   - Wow, Now that I actually thought and searched for it, there is a good algorithm to convex hull for a given set of points. *Quickhull* similar to *Quicksort* is a average O(nlogn) algorithm which uses a divide-and-conquer approach to this problem.
+     I am going to implement this, and then find the areas for the remaining points.
+
+** Day 07
+   - ~dict~ and ~ordsets~ to store the network.
+   - I should have carefully read the provided example. Too much work to miss something and comeback to redo.
+   - To represent the graph, I used two ~dict~ s, one for each end of the arrow. Probably saved a lot of repeated calculations. Also saving the adjacency list as ~ordsets~ helped when trying to do ~is_subset~.   
